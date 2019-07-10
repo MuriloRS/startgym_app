@@ -72,7 +72,6 @@ class _BuyDailyTabState extends State<BuyDailyTab>
                       SizedBox(
                         height: 25,
                       ),
-                      
                       InkWell(
                           child: Container(
                               decoration: borderPackages,
