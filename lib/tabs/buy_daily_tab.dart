@@ -143,8 +143,3 @@ class _BuyDailyTabState extends State<BuyDailyTab>
         builder: (context) => PaymentDailyProcess(planDays, valuePoints)));
   }
 }
-
-
-/**
- * 
- */
