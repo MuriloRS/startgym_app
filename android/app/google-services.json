@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "993459439436",
+    "firebase_url": "https://startgym-220814.firebaseio.com",
+    "project_id": "startgym-220814",
+    "storage_bucket": "startgym-220814.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:993459439436:android:88784e8af8f111b9",
+        "android_client_info": {
+          "package_name": "com.example.startgym"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "993459439436-l5mdm355pfll5an5hdvmposlaes24ioo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.startgym",
+            "certificate_hash": "8720d0d147a13406030d76fb1c433f5460cace60"
+          }
+        },
+        {
+          "client_id": "993459439436-00cjragqrtc4s5a0f2f916mg48he6cp1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDodfYX-ml74MTCu1oRRt_KMwgI-rrZc0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "993459439436-00cjragqrtc4s5a0f2f916mg48he6cp1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
