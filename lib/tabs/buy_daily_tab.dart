@@ -145,7 +145,6 @@ class _BuyDailyTabState extends State<BuyDailyTab>
 }
 
 
-
 /**
  * 
  */
