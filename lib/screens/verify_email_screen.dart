@@ -34,7 +34,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   void dispose() {
     stream.sink.close();
     stream.close();
-    
+
     super.dispose();
   }
 
@@ -74,21 +74,16 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         CupertinoButton(
+                          color: Colors.green,
+                        
                             child: Text("Já confirmei minha conta",
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary)),
+                                style: TextStyle(color: Colors.white)),
                             onPressed: () {
-
                               _reloadFirebaseUser()
                                   .then((bool isEmailVerified) {
-
                                 if (isEmailVerified) {
-
                                   stream.sink.add(true);
-
                                 } else {
-                                  
                                   _scaffoldKey.currentState
                                       .showSnackBar(SnackBar(
                                     content: Text(
@@ -108,11 +103,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                               });
                             }),
                         CupertinoButton(
+                          
                           child: Text(
                             "Não recebi o email",
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: Colors.grey[700]),
                           ),
-                          color: Theme.of(context).accentColor,
+                          color: Colors.transparent,
                           onPressed: () async {
                             _scaffoldKey.currentState.showSnackBar(SnackBar(
                               content: Text(

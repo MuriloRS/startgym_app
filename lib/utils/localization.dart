@@ -9,6 +9,7 @@ class Localization {
   Location location = Location();
   String erro;
   static Map fetchPostApi = Map();
+  static List listAcademys;
 
   Future<Map<String, double>> getInitialLocation() async {
     Map<String, double> myLocation;
@@ -23,19 +24,9 @@ class Localization {
     }
   }
 
-  Future<Map<String, double>> getStartingLocation() async {
-    currentLocation['latitude'] = 0.0;
-    currentLocation['longitude'] = 0.0;
-
-    location.onLocationChanged().listen((actualLocation) {
-      currentLocation = actualLocation;
-    });
-
-    return null;
-  }
-
   Future<List> getLocationsAcademyNearBy() async {
     Map userLocation = await this.getInitialLocation();
+
     double userLatitude = userLocation['latitude'];
     double userLongitude = userLocation['longitude'];
 
@@ -54,10 +45,8 @@ class Localization {
     listCoordinates.add({'latitude': userLatitude, 'longitude': userLongitude});
 
     //Busca todas as academias
-    QuerySnapshot querySnapshot = await Firestore.instance
-        .collection("userAcademy")
-        .where("detailSaved", isEqualTo: true)
-        .getDocuments();
+    QuerySnapshot querySnapshot =
+        await Firestore.instance.collection("userAcademy").getDocuments();
 
     if (querySnapshot.documents.length > 0) {
       querySnapshot.documents.forEach((document) {
@@ -71,6 +60,9 @@ class Localization {
         coordinate["documentId"] = document.documentID;
         coordinate["valueSack"] = document["academyValueSack"];
         coordinate["academyCheckInCode"] = document["academyCheckInCode"];
+        coordinate["address"] = document["logradouro"];
+        coordinate["email"] = document["email"];
+        coordinate["idOneSignal"] = document["idOneSignal"];
 
         listCoordinates.add(coordinate);
 
@@ -82,7 +74,7 @@ class Localization {
       });
     } else {
       List<Map> listReturn = List();
-      listReturn.add({"semAcademias": true});
+      listReturn.add({"latitude": userLatitude, "longitude": userLongitude});
       return listReturn;
     }
     //Para cada academia encontrada adiciona um mapa de coordenada a lista de academias
@@ -119,6 +111,8 @@ class Localization {
         });
       } else {
         returnAcademysList.add({
+          "address": listCoordinates.elementAt(i)["address"],
+          "email": listCoordinates.elementAt(i)["email"],
           "distance": convertMilesToKm(
               listHelp.elementAt(indexAcademy)["distance"]["text"]),
           "duration": listHelp.elementAt(indexAcademy)["duration"]["text"],
@@ -130,7 +124,8 @@ class Localization {
           "documentId": listCoordinates.elementAt(i)["documentId"],
           "valueSack": listCoordinates.elementAt(i)["valueSack"],
           "academyCheckInCode":
-              listCoordinates.elementAt(i)["academyCheckInCode"]
+              listCoordinates.elementAt(i)["academyCheckInCode"],
+          "idOneSignal": listCoordinates.elementAt(i)["idOneSignal"],
         });
 
         indexAcademy++;

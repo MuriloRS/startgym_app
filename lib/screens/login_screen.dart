@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -8,12 +8,16 @@ import 'package:startgym/screens/academy_home_screen.dart';
 import 'package:startgym/screens/home_screen.dart';
 import 'package:startgym/screens/recover_pass.dart';
 import 'package:startgym/screens/register_screen.dart';
+import 'package:startgym/utils/email.dart';
 import 'package:startgym/utils/slideRightRoute.dart';
 import 'package:startgym/widgets/loader.dart';
 import 'package:startgym/widgets/logo.dart';
 import 'package:startgym/utils/validations.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:http/http.dart' as http;
+import 'package:crypto/crypto.dart' as crypto;
 
 class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
@@ -28,14 +32,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool isObscurePass = true;
-
-
+  var focusNode = new FocusNode();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: EdgeInsets.fromLTRB(10.0, 25.0, 10.0, 10.0),
-        color: Colors.black,
+        color: Colors.white10,
+        padding: EdgeInsets.fromLTRB(0, 25.0, 0, 0),
         child: Scaffold(
             key: _scaffoldKey,
             appBar: null,
@@ -65,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(height: 10.0),
                       TextFormField(
+                        focusNode: focusNode,
                         controller: _emailController,
                         decoration: InputDecoration(
                           labelText: "Email",
@@ -80,6 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (validationEmail.isNotEmpty) {
                             return validationEmail;
                           }
+
+                          return null;
                         },
                       ),
                       SizedBox(
@@ -94,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 labelText: "Senha",
                               ),
                               keyboardType: TextInputType.text,
-                          obscureText: isObscurePass,
+                              obscureText: isObscurePass,
                               validator: (password) {
                                 if (password.isEmpty) {
                                   return "Preencha o campo senha";
@@ -103,13 +109,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                 if (password.length < 6) {
                                   return "A senha precisa ter no mínimo 6 caracteres";
                                 }
+
+                                return null;
                               },
                             ),
                             IconButton(
                               iconSize: 16,
                               icon: isObscurePass
-                              ? Icon(FontAwesomeIcons.eye)
-                              : Icon(FontAwesomeIcons.eyeSlash),
+                                  ? Icon(FontAwesomeIcons.eye)
+                                  : Icon(FontAwesomeIcons.eyeSlash),
                               onPressed: () {
                                 setState(() {
                                   if (isObscurePass) {
@@ -163,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       } else {
                                         _onFail(
                                             errMessage:
-                                                "Esse email ainda não foi cadastrado na nossa base de dados.");
+                                                "O email ou a senha estão incorretos.");
                                       }
                                     });
 
@@ -197,10 +205,31 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontSize: 18.0,
                             ),
                           ),
-                          onPressed: () {},
+                          onPressed: () async {
+                            FirebaseUser user = await initiateFacebookLogin();
+
+                            Map<String, dynamic> userData = {
+                              "name": user.displayName,
+                              "email": user.email,
+                              "userType": "0",
+                              "lastCheckin": "",
+                              "planActive": false,
+                              "planExpires": "",
+                              "cards": [],
+                              "idCard": ""
+                            };
+
+                            model.firebaseUser = user;
+                            model.loadCurrentUser();
+
+                            model.saveUserDataFromGoogleLogin(
+                                userData, user.uid);
+
+                            _onSuccess();
+                          },
                           padding: EdgeInsets.symmetric(
                               horizontal: 15.0, vertical: 12.0),
-                          color: Color.fromRGBO(59, 89, 152, 1.0),
+                          color: Color.fromRGBO(59, 89, 152, 1),
                           textColor: Colors.white,
                         ),
                         width: 220.0,
@@ -219,11 +248,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               Map<String, dynamic> userData = {
                                 "name": user.displayName,
                                 "email": user.email,
-                                "userPoints": 0,
                                 "userType": "0",
-                                "id": user.uid
+                                "lastCheckin": "",
+                                "planActive": false,
+                                "planExpires": "",
+                                "cards": [],
+                                "idCard": ""
                               };
-                              model.saveUserDataFromGoogleLogin(userData);
+
+                              model.firebaseUser = user;
+                              model.loadCurrentUser();
+
+                              model.saveUserDataFromGoogleLogin(
+                                  userData, user.uid);
+
                               _onSuccess();
                             }).catchError((e) => print(e));
                           },
@@ -297,15 +335,62 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<FirebaseUser> _handleSignIn() async {
-    GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    FirebaseUser user;
+    try {
+      GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-    FirebaseUser user = await _auth.signInWithGoogle(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+      final AuthCredential credential = GoogleAuthProvider.getCredential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      user = await _auth.signInWithCredential(credential);
+    } catch (e) {
+      Email emails = new Email();
+      emails.sendEmail(e.toString(), 'murilo_haas@outlook.com',
+          'murilo_haas@outlook.com', 'erro login google');
+    }
 
     return user;
+  }
+
+  Future<FirebaseUser> initiateFacebookLogin() async {
+    var facebookLogin = FacebookLogin();
+    var facebookLoginResult =
+        await facebookLogin.logInWithReadPermissions(['email']);
+
+    switch (facebookLoginResult.status) {
+      case FacebookLoginStatus.error:
+        print("Error");
+
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        print("CancelledByUser");
+
+        break;
+      case FacebookLoginStatus.loggedIn:
+        print("LoggedIn");
+
+        var graphResponse = await http.get(
+            'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${facebookLoginResult.accessToken.token}');
+
+        dynamic result = json.decode(graphResponse.body);
+
+        final AuthCredential credential = FacebookAuthProvider.getCredential(
+          accessToken: facebookLoginResult.accessToken.token,
+        );
+
+        FirebaseUser user =
+            await UserModel.of(context).auth.signInWithCredential(credential);
+
+        return user;
+        break;
+    }
+
+    return null;
+  }
+
+  String generateMd5(String input) {
+    return crypto.md5.convert(utf8.encode(input)).toString();
   }
 }

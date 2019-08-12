@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name='app_name'>Startgym</string>
+<string name="facebook_app_id">475625606261431</string> <string name="fb_login_protocol_scheme">fb475625606261431</string>
+</resources>

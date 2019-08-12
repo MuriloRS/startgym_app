@@ -8,18 +8,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:993459439436:android:88784e8af8f111b9",
+        "mobilesdk_app_id": "1:993459439436:android:ba4a4711955c90ea",
         "android_client_info": {
-          "package_name": "com.example.startgym"
+          "package_name": "com.murilo.startgym"
         }
       },
       "oauth_client": [
         {
-          "client_id": "993459439436-l5mdm355pfll5an5hdvmposlaes24ioo.apps.googleusercontent.com",
+          "client_id": "993459439436-16q2hjnletnsfo9sfdrqbuo19r1i97j2.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.startgym",
-            "certificate_hash": "8720d0d147a13406030d76fb1c433f5460cace60"
+            "package_name": "com.murilo.startgym",
+            "certificate_hash": "c2873e5a0f157925a9bd56877b15193ce456b0dc"
           }
         },
         {

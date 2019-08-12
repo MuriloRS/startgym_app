@@ -275,8 +275,7 @@ class _AcademyDetailTabState extends State<AcademyDetailTab> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: <Widget>[
                                     Text("Dias de semana:",
-                                          style: styleHorario),
-                                    
+                                        style: styleHorario),
                                     SizedBox(
                                       height: 3,
                                     ),
@@ -317,7 +316,6 @@ class _AcademyDetailTabState extends State<AcademyDetailTab> {
                                                     BorderRadius.circular(0))),
                                       ),
                                     ),
-                                    
                                     SizedBox(
                                       height: 3,
                                     ),
@@ -477,6 +475,26 @@ class _AcademyDetailTabState extends State<AcademyDetailTab> {
           );
   }
 
+  void _deleteImageFromDatabase(indexImage) async {
+    DocumentSnapshot snapshot = await Firestore.instance
+        .collection("userAcademy")
+        .document(UserModel.of(context).firebaseUser.uid)
+        .collection("academyDetail")
+        .document("firstDetail")
+        .get();
+
+    Map snapshotDeleted =
+        snapshot.data.update("Images$indexImage", (dynamic val) => '');
+    snapshotDeleted = snapshot.data.update("firstImage", (dynamic val) => '');
+
+    await Firestore.instance
+        .collection("userAcademy")
+        .document(UserModel.of(context).firebaseUser.uid)
+        .collection("academyDetail")
+        .document("firstDetail")
+        .updateData(snapshotDeleted);
+  }
+
   Future<bool> imagePicker(isImagePickerGaleria) async {
     setState(() {
       isLoadingCarousel = true;
@@ -502,7 +520,9 @@ class _AcademyDetailTabState extends State<AcademyDetailTab> {
 
       if (downloadUrl != null) {
         setState(() {
-          listaImagens.add(Image.network(downloadUrl));
+          listaImagens.add(
+            Image.network(downloadUrl),
+          );
         });
       }
 
@@ -609,9 +629,9 @@ class _AcademyDetailTabState extends State<AcademyDetailTab> {
 
           for (var i = 1; i <= qtdImages; i++) {
             if (snapshot.data["Images" + i.toString()] != null) {
-              this
-                  .listaImagens
-                  .add(Image.network(snapshot.data["Images" + i.toString()]));
+              this.listaImagens.add(
+                    Image.network(snapshot.data["Images" + i.toString()]),
+                  );
             }
           }
 

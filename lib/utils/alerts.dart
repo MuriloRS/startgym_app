@@ -3,15 +3,32 @@ import 'package:flutter/material.dart';
 
 class Alerts {
   void buildMaterialDialog(
-      Widget title, List<Widget> actions, BuildContext context) {
+      Widget title, List<Widget> actions, BuildContext context,
+      {Widget content}) {
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: title,
             actions: actions,
+            content: content,
           );
         });
+  }
+
+  void buildNoConnectionModal(context, VoidCallback reload) {
+    buildCupertinoDialog(
+        Text("Sem internet"),
+        [
+          CupertinoDialogAction(
+            child: Text("Atualizar"),
+            isDefaultAction: true,
+            onPressed: () {
+              reload();
+            },
+          )
+        ],
+        context, content: Text("Por favor se conecte à uma rede :)"));
   }
 
   void buildCupertinoDialog(
@@ -58,8 +75,9 @@ class Alerts {
                   maxLength: 6,
                   keyboardType: TextInputType.datetime,
                   decoration: InputDecoration(
-                      labelText: "",
-                      isDense: true,),
+                    labelText: "",
+                    isDense: true,
+                  ),
                 ),
                 SizedBox(
                   height: 16,
@@ -71,9 +89,7 @@ class Alerts {
                 TextField(
                   maxLength: 3,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                      labelText: "",
-                      isDense: true),
+                  decoration: InputDecoration(labelText: "", isDense: true),
                 ),
                 SizedBox(
                   height: 16,

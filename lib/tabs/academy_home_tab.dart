@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:startgym/models/user_model.dart';
 import 'package:startgym/utils/alerts.dart';
 import 'package:startgym/utils/email.dart';
-import 'package:startgym/utils/listenConnectivity.dart';
 import 'package:startgym/widgets/loader.dart';
 import 'package:startgym/widgets/sliver_appbar.dart';
 
@@ -53,24 +52,6 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
     }
   }
 
-  void reloadScreen() {
-    if (ListenConnectivity.result.index == ConnectionState.none.index) {
-      new Alerts().buildCupertinoDialog(
-          Text("Sem conexão"),
-          [
-            CupertinoDialogAction(
-              child: Text("Atualizar"),
-              textStyle: TextStyle(color: Theme.of(context).buttonColor),
-              onPressed: () {
-                reloadScreen();
-              },
-            )
-          ],
-          context);
-    } else {
-      Navigator.pop(context);
-    }
-  }
 
   @override
   void dispose() {
@@ -94,85 +75,8 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
                         padding: EdgeInsets.only(
                             top: 10.0, right: 10, left: 10, bottom: 0),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            UserModel.of(context).firebaseUser != null
-                                ? FutureBuilder(
-                                    future: Firestore.instance
-                                        .collection("userAcademy")
-                                        .document(UserModel.of(context)
-                                            .firebaseUser
-                                            .uid)
-                                        .collection("academyDetail")
-                                        .getDocuments(),
-                                    builder: (context,
-                                        AsyncSnapshot<QuerySnapshot>
-                                            querySnapshot) {
-                                      if (querySnapshot.connectionState ==
-                                              ConnectionState.waiting ||
-                                          querySnapshot.connectionState ==
-                                              ConnectionState.none) {
-                                        return Container();
-                                      } else if (querySnapshot.data.documents
-                                              .elementAt(0)
-                                              .documentID
-                                              .toString() ==
-                                          "firstDetail") {
-                                        return Card(
-                                          elevation: 3.0,
-                                          color: Colors.white,
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: <Widget>[
-                                              const ListTile(
-                                                contentPadding:
-                                                    EdgeInsets.symmetric(
-                                                        horizontal: 10.0),
-                                                title: Text(
-                                                  'Atualize suas informações para receber mais alunos.',
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                      fontSize: 16,
-                                                      color: Color.fromRGBO(
-                                                          50, 50, 50, 1)),
-                                                ),
-                                              ),
-                                              ButtonTheme.bar(
-                                                  child: ButtonBar(
-                                                      alignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: <Widget>[
-                                                    FlatButton(
-                                                      textColor:
-                                                          Theme.of(context)
-                                                              .colorScheme
-                                                              .primary,
-                                                      child: const Text(
-                                                        "atualizar informações",
-                                                        style: TextStyle(
-                                                          decoration:
-                                                              TextDecoration
-                                                                  .underline,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                          fontSize: 16.0,
-                                                        ),
-                                                      ),
-                                                      onPressed: () {
-                                                        widget.pageController
-                                                            .jumpToPage(1);
-                                                      },
-                                                    ),
-                                                  ])),
-                                            ],
-                                          ),
-                                        );
-                                      } else {
-                                        return Container();
-                                      }
-                                    },
-                                  )
-                                : Container(),
                             SizedBox(
                               height: 10,
                             ),
@@ -182,6 +86,8 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
                                   .document(
                                       UserModel.of(context).firebaseUser.uid)
                                   .collection("checkins")
+                                  .where("viewed", isEqualTo: false)
+                                  .orderBy("time", descending: true)
                                   .snapshots(),
                               builder: (context,
                                   AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -189,57 +95,54 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
                                         ConnectionState.none ||
                                     snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                  return Loader();
+                                  return Center(child: Loader());
                                 }
 
                                 if (snapshot.hasData) {
-                                  if (snapshot.data.documentChanges.length >
-                                      0) {
-
-
+                                  if (snapshot.data.documents.length > 0) {
                                     this.qtdCheckIns =
                                         snapshot.data.documents.length;
 
                                     List<ListTile> listTiles = buildCardCheckIn(
-                                        snapshot.data.documentChanges);
+                                        snapshot.data.documents);
 
-                                    return Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: <Widget>[
-                                          listTiles.length > 0
-                                              ? Text(
-                                                  "${listTiles.length} " +
-                                                      (listTiles.length == 1
-                                                          ? " check-in pendente"
-                                                          : " check-ins pendentes"),
-                                                  style:
-                                                      TextStyle(fontSize: 24))
-                                              : Text("Nenhum check-in pendente",
-                                                  style:
-                                                      TextStyle(fontSize: 24)),
-                                          SizedBox(
-                                            height: 16,
+                                    return Column(children: <Widget>[
+                                      Text(
+                                          "${listTiles.length} " +
+                                              (listTiles.length == 1
+                                                  ? " check-in pendente"
+                                                  : " check-ins pendentes"),
+                                          style: TextStyle(fontSize: 28)),
+                                      SizedBox(
+                                        height: 16,
+                                      ),
+                                      Container(
+                                        height:
+                                            MediaQuery.of(context).size.height -
+                                                170,
+                                        child: Scrollbar(
+                                            child: ListView.separated(
+                                          separatorBuilder: (context, index) =>
+                                              Divider(
+                                            color: Colors.grey,
                                           ),
-                                          Container(
-                                            height: 370,
-                                            child: Scrollbar(
-                                                child: ListView.builder(
-                                              shrinkWrap: true,
-                                              padding: EdgeInsets.all(0),
-                                              itemCount: listTiles.length,
-                                              itemBuilder:
-                                                  (BuildContext context,
-                                                      index) {
-                                                return listTiles
-                                                    .elementAt(index);
-                                              },
-                                            )),
-                                          )
-                                        ]);
+                                          shrinkWrap: true,
+                                          padding: EdgeInsets.all(0),
+                                          itemCount: listTiles.length,
+                                          itemBuilder:
+                                              (BuildContext context, index) {
+                                            return listTiles.elementAt(index);
+                                          },
+                                        )),
+                                      )
+                                    ]);
                                   } else {
-                                    return Text("Nenhum check-in pendente.");
+                                    return Container(
+                                      width: double.infinity,
+                                      child: Text("Nenhum check-in pendente",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(fontSize: 28)),
+                                    );
                                   }
                                 }
 
@@ -271,9 +174,8 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
   void doAcceptCheckIn(
       {@required String academyId,
       @required Map academyData,
-      @required String checkInId,
-      @required double valueReceived}) {
-    double newValueAcademy = academyData["academyValueSack"] + valueReceived;
+      @required String checkInId}) {
+    double newValueAcademy = academyData["academyValueSack"] + 2.50;
 
     try {
       Firestore.instance
@@ -286,19 +188,12 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
           .document(academyId)
           .collection("checkins")
           .document(checkInId)
-          .updateData({"viewed": true});
+          .delete();
 
       setState(() {
         isLoading = false;
       });
 
-      this._scaffoldKey.currentState.showSnackBar(SnackBar(
-            content: Text(
-              "O valor  de R\$ $valueReceived foi depositado na conta.",
-            ),
-            backgroundColor: Colors.white,
-            duration: Duration(seconds: 3),
-          ));
     } catch (er) {
       this._scaffoldKey.currentState.showSnackBar(SnackBar(
             content: Text(
@@ -314,11 +209,11 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
     return Firestore.instance.collection("users").document(docUser).get();
   }
 
-  List<Widget> buildCardCheckIn(List<DocumentChange> documents) {
+  List<Widget> buildCardCheckIn(List<DocumentSnapshot> documents) {
     List<ListTile> retornoWidgets = new List<ListTile>();
 
     for (int x = 0; x < documents.length; x++) {
-      var data = documents.elementAt(x).document;
+      var data = documents.elementAt(x);
 
       if (data.data["viewed"] == false) {
         String horario = convertDateTimeToTime(data.data["time"]);
@@ -352,8 +247,7 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
                         academyData: UserModel.of(context).userData,
                         academyId: UserModel.of(context).firebaseUser.uid,
                         checkInId: data.documentID,
-                        valueReceived:
-                            double.parse(data.data["price"].toString()));
+                        );
                     setState(() {
                       isLoading = false;
                     });
@@ -384,8 +278,8 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
         CupertinoDialogAction(
           child: Text(
             "Entendi",
-            style: TextStyle(color: Theme.of(context).accentColor),
           ),
+          isDefaultAction: true,
           onPressed: () async {
             Map academyData = UserModel.of(context).userData;
 
@@ -401,8 +295,9 @@ class _AcademyHomeTabState extends State<AcademyHomeTab> {
         )
       ],
       context,
-      content: Text("Você terminou o seu cadastro, te enviamos um qr-code e " +
-          "instruções mais detalhadas para você começar a receber alunos, seja bem-vindo! "),
+      content: Text(
+          "Você terminou o seu cadastro, te enviamos para seu e-mail um qr-code e " +
+              "instruções mais detalhadas para você começar a receber alunos, seja bem-vindo! Você também deve preencher os dados básicos da academia para receber mais alunos, é só navegar no menu detalhes."),
     );
   }
 }

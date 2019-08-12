@@ -1,4 +1,4 @@
-package com.example.startgym;
+package com.murilo.startgym;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

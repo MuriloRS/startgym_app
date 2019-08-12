@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:startgym/models/user_model.dart';
 import 'package:startgym/screens/academy_detail_screen.dart';
 import 'package:startgym/utils/alerts.dart';
-import 'package:startgym/utils/listenConnectivity.dart';
 import 'package:startgym/utils/slideRightRoute.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:async';
@@ -35,32 +34,11 @@ class _AcademyCheckinState extends State<AcademyCheckin> {
   @override
   void initState() {
     super.initState();
-
-    ListenConnectivity.startListen(context);
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  void reloadScreen() {
-    if (ListenConnectivity.result.index == ConnectionState.none.index) {
-      new Alerts().buildCupertinoDialog(
-          Text("Sem conexão"),
-          [
-            CupertinoDialogAction(
-              child: Text("Atualizar"),
-              textStyle: TextStyle(color: Theme.of(context).buttonColor),
-              onPressed: () {
-                reloadScreen();
-              },
-            )
-          ],
-          context);
-    } else {
-      Navigator.pop(context);
-    }
   }
 
   @override
@@ -76,11 +54,6 @@ class _AcademyCheckinState extends State<AcademyCheckin> {
         ? true
         : false;
 
-    String message = !planActive
-        ? "Você não tem um plano ativo"
-        : lastCheckin.toString() != ""
-            ? "Você já fez um checkin hoje, só pode fazer um por dia"
-            : "";
 
     UserModel.of(context).academyCheckIn = dataAcademy["documentId"];
 
@@ -227,7 +200,6 @@ class _AcademyCheckinState extends State<AcademyCheckin> {
           onPressed: () {
             Navigator.of(context).pop();
             Navigator.of(context).pushNamed("/buyScreen");
-            //widget.drawerController.jumpTo(2);
           },
         ),
         backgroundColor: Colors.grey[300],
@@ -307,7 +279,7 @@ class _AcademyCheckinState extends State<AcademyCheckin> {
     }
   }
 
-  void ReloadCurrentUser() async {
+  void reloadCurrentUser() async {
     await UserModel.of(context).loadCurrentUser();
   }
 }

@@ -38,26 +38,38 @@ class _AcademyDetailScreenState extends State<AcademyDetailScreen> {
                     snapshot.connectionState.index ==
                         ConnectionState.active.index) {
                   List<Widget> imagensAcademia = new List();
-                  String address = snapshot.data.data["address"];
-                  String email = snapshot.data.data["email"];
-                  String phone = snapshot.data.data["phone"];
-                  String observation = snapshot.data.data["observation"];
-                  String horaryWeek = snapshot.data.data["horaryWeek"];
-                  String horarySaturday = snapshot.data.data["horarySaturday"];
-                  String horarySunday = snapshot.data.data["horarySunday"];
-                  String horaryHoliday = snapshot.data.data["horaryHoliday"];
-                  Map optionals = snapshot.data.data["optionals"];
+                  String address = dataAcademy["address"];
+                  String email = dataAcademy['email'];
+                  String phone =
+                      snapshot.data.data["phone"] ?? "não preenchido";
+                  String observation =
+                      snapshot.data.data["observation"] ?? "não preenchido";
+                  String horaryWeek =
+                      snapshot.data.data["horaryWeek"] ?? "não preenchido";
+                  String horarySaturday =
+                      snapshot.data.data["horarySaturday"] ?? "não preenchido";
+                  String horarySunday =
+                      snapshot.data.data["horarySunday"] ?? "não preenchido";
+                  String horaryHoliday =
+                      snapshot.data.data["horaryHoliday"] ?? "não preenchido";
+                  Map optionals =
+                      snapshot.data.data["optionals"] ?? "não preenchido";
                   String academyName = dataAcademy["fantasia"] == ""
                       ? dataAcademy["name"]
                       : dataAcademy["fantasia"];
 
                   TextStyle styleDescription =
-                      TextStyle(color: Colors.black54, fontSize: 18);
+                      TextStyle(color: Colors.grey[600], fontSize: 16);
 
                   for (var i = 1; i <= 10; i++) {
                     if (snapshot.data.data["Images" + i.toString()] != null) {
                       imagensAcademia.add(Image.network(
                           snapshot.data.data["Images" + i.toString()]));
+                    } else if (snapshot.data.data["firstImage"]) {
+                      imagensAcademia
+                          .add(Image.asset("images/empty-photo.jpg"));
+
+                      i = 11;
                     }
                   }
 
@@ -75,7 +87,6 @@ class _AcademyDetailScreenState extends State<AcademyDetailScreen> {
                             new CarouselSlider(
                               items: imagensAcademia,
                               viewportFraction: 0.9,
-                              initialPage: 0,
                               aspectRatio: 0.9,
                               height: 230,
                               reverse: false,
@@ -96,12 +107,10 @@ class _AcademyDetailScreenState extends State<AcademyDetailScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  address != null
-                                      ? Text(
-                                          "Endereço: " + address,
-                                          style: styleDescription,
-                                        )
-                                      : Container(),
+                                  Text(
+                                    "Endereço: " + address.toLowerCase(),
+                                    style: styleDescription,
+                                  ),
                                   SizedBox(
                                     height: 16,
                                   ),
@@ -154,7 +163,8 @@ class _AcademyDetailScreenState extends State<AcademyDetailScreen> {
                                         : Container(),
                                   ],
                                 )),
-                            Text("Obervação: $observation"),
+                            Text("Obervação: $observation",
+                                style: styleDescription),
                             SizedBox(
                               height: 25,
                             ),

@@ -4,14 +4,13 @@ import 'package:startgym/models/user_model.dart';
 import 'package:startgym/tabs/buy_daily_tab.dart';
 import 'package:startgym/tabs/home_tab.dart';
 import 'package:startgym/tabs/report_error_screen.dart';
+import 'package:startgym/tabs/send_invite_tab.dart';
 import 'package:startgym/widgets/custom_drawer.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _pageController = PageController();
-    final GlobalKey<ScaffoldState> _scaffoldKey =
-        new GlobalKey<ScaffoldState>(); // ADD THIS LINE
 
     return ScopedModelDescendant<UserModel>(
       builder: (context, builder, model) {
@@ -22,7 +21,7 @@ class HomeScreen extends StatelessWidget {
             physics: NeverScrollableScrollPhysics(),
             children: <Widget>[
               Scaffold(
-                body: HomeTab(_pageController, _scaffoldKey),
+                body: HomeTab(_pageController),
                 drawer: CustomDrawer(_pageController),
               ),
               Scaffold(
@@ -31,6 +30,10 @@ class HomeScreen extends StatelessWidget {
               ),
               Scaffold(
                 body: ReportErrorScreen(),
+                drawer: CustomDrawer(_pageController),
+              ),
+              Scaffold(
+                body: SendInviteTab(),
                 drawer: CustomDrawer(_pageController),
               ),
             ],

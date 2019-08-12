@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -86,14 +87,21 @@ class UserModel extends Model {
   }
 
   Future<Null> saveUserDataFromGoogleLogin(
-      Map<String, dynamic> userData) async {
+      Map<String, dynamic> userData, String uid) async {
     isLoading = true;
     this.userData = userData;
 
-    await Firestore.instance
+    QuerySnapshot qtdEmails = await Firestore.instance
         .collection("users")
-        .document(userData["id"])
-        .setData(userData);
+        .where("email", isEqualTo: userData["email"])
+        .getDocuments();
+
+    if (qtdEmails.documents.length == 0) {
+      await Firestore.instance
+          .collection("users")
+          .document(uid)
+          .setData(userData);
+    }
 
     isLoading = false;
     notifyListeners();
@@ -114,6 +122,10 @@ class UserModel extends Model {
         .collection("academyDetail")
         .document("firstDetail")
         .setData({
+      "horaryWeek": "07:00-12:00 13:00-22:00",
+      "horarySaturday": "07:00-12:00 13:00-22:00",
+      "horarySunday": "07:00-12:00 13:00-22:00",
+      "horaryHoliday": "07:00-12:00 13:00-22:00",
       "firstImage": true,
       "optionals": {
         'Ar-condicionado': false,
@@ -147,8 +159,8 @@ class UserModel extends Model {
 
       if (this.firebaseUser.isEmailVerified) {
         if (this.userData["userType"] == "0") {
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => HomeScreen()));
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => HomeScreen()));
         } else if (this.userData["userType"] == "1") {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => AcademyHomeScreen()));
@@ -206,6 +218,21 @@ class UserModel extends Model {
     }
 
     if (this.firebaseUser != null) {
+      if (userData == null || userData.isEmpty) {
+        QuerySnapshot resultadoQuery = await Firestore.instance
+            .collection("users")
+            .where("email", isEqualTo: this.firebaseUser.email)
+            .getDocuments();
+
+        if (resultadoQuery.documents.length > 0) {
+          this.userData = resultadoQuery.documents.elementAt(0).data;
+
+          notifyListeners();
+
+          return;
+        }
+      }
+
       if (userData != null) {
         if (userData["name"] == null || userData.isEmpty == true) {
           DocumentSnapshot docUser;
@@ -233,11 +260,63 @@ class UserModel extends Model {
     notifyListeners();
   }
 
-  void activeUserPlan(duration) async {
-    
+  Future<void> activeUserPlan(duration) async {
+    //SETA O PLANO ATIVO, ADICIONA MAIS 30 DIAS A DATA DE EXPIRAÇÃO DO PLANO E SALVA OS NOVOS DADOS
     this.userData["planActive"] = true;
-    this.userData["planExpires"] = DateTime.now().add(Duration(days:duration));
+    this.userData["planExpires"] = DateTime.now().add(Duration(days: duration));
 
     await saveUserData(this.userData);
+
+    //ADICIONA 5 DIÁRIAS PARA O USUÁRIO QUE TE CONVIDOU SE EXISTIR
+    QuerySnapshot result = await Firestore.instance
+        .collection("friendsInvited")
+        .where("to", isEqualTo: this.userData['email'])
+        .getDocuments();
+
+    for (int x = 0; x < result.documents.length; x++) {
+      //PEGA OS DADOS DO USUÁRIO QUE CONVIDOU
+      DocumentSnapshot userToReceiveDiary = await Firestore.instance
+          .collection("users")
+          .document(result.documents.elementAt(x).data['from'])
+          .get();
+
+      //ADICIONO 5 DIAS PARA QUEM O CONVIDOU
+      DateTime newPlanExpires = (userToReceiveDiary != null &&
+              userToReceiveDiary.data['planExpires'] != null &&
+              userToReceiveDiary.data['planExpires'] != "")
+          ? userToReceiveDiary.data['planExpires']
+          : new DateTime.now();
+      userToReceiveDiary.data['planExpires'] =
+          newPlanExpires.add(Duration(days: 5));
+
+      userToReceiveDiary.data['planActive'] = true;
+
+      //SALVO
+      await Firestore.instance
+          .collection("users")
+          .document(result.documents.elementAt(x).data['from'])
+          .updateData(userToReceiveDiary.data);
+
+      //DELETO O DOCUMENTO QUE DIZIA QUE O USUÁRIO X CONVIDOU O USUÁRIO Y
+      await Firestore.instance
+          .collection("friendsInvited")
+          .document(result.documents.elementAt(x).documentID)
+          .delete();
+    }
+  }
+
+  Future<void> saveOnesignalId() async {
+    if (!Map.of(this.userData).containsKey("idOneSignal")) {
+      OSPermissionSubscriptionState os =
+          await OneSignal.shared.getPermissionSubscriptionState();
+
+      this.userData["idOneSignal"] = os.subscriptionStatus.userId;
+
+      if (userData["userType"] == "1") {
+        await this._saveAcademyData(userData);
+      } else {
+        //await this.saveUserData(userData);
+      }
+    }
   }
 }

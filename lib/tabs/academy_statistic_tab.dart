@@ -14,7 +14,6 @@ class AcademyStatisticTab extends StatefulWidget {
 
 class _AcademySettingsTabState extends State<AcademyStatisticTab> {
   var isLoading = false;
-  String _value = "0";
 
   @override
   Widget build(BuildContext context) {
