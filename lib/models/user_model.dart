@@ -84,6 +84,8 @@ class UserModel extends Model {
           .document(firebaseUser.uid)
           .setData(userData);
     }
+
+    notifyListeners();
   }
 
   Future<Null> saveUserDataFromGoogleLogin(

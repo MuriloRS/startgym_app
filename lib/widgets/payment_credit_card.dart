@@ -62,7 +62,7 @@ class _PaymentCreditcardState extends State<PaymentCreditcard> {
           children: <Widget>[
             Container(
               width: 180,
-              height: MediaQuery.of(context).size.height - 550,
+              height: MediaQuery.of(context).size.height - 800,
               child: isFrontCard
                   ? Image.asset("images/front-card.png")
                   : Image.asset("images/back-card.png"),
@@ -74,7 +74,7 @@ class _PaymentCreditcardState extends State<PaymentCreditcard> {
                 Form(
                   key: _formKey,
                   child: Container(
-                      height: MediaQuery.of(context).size.height - 230,
+                      height: MediaQuery.of(context).size.height - 250,
                       padding: EdgeInsets.only(
                           top: 10, left: 15, right: 15, bottom: 5),
                       child: ScrollConfiguration(
@@ -464,7 +464,7 @@ class _PaymentCreditcardState extends State<PaymentCreditcard> {
                 ),
                 isProcessingPayment
                     ? Container(
-                        height: MediaQuery.of(context).size.height - 230,
+                        height: MediaQuery.of(context).size.height - 250,
                         decoration: new BoxDecoration(
                           color: const Color.fromRGBO(250, 250, 250, 1)
                               .withOpacity(0.7),

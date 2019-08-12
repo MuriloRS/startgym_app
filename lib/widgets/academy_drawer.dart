@@ -16,7 +16,9 @@ class AcademyDrawer extends StatelessWidget {
     return Drawer(child:
         ScopedModelDescendant<UserModel>(builder: (contex, child, model) {
       String nomeAcademia = model.isLoggedIn() ? model.userData["name"] : "";
-      nomeAcademia = nomeAcademia != "" ? nomeAcademia.substring(0, nomeAcademia.length) : "";
+      nomeAcademia = nomeAcademia != ""
+          ? nomeAcademia.substring(0, nomeAcademia.length)
+          : "";
 
       return model.firebaseUser != null
           ? Column(
@@ -61,10 +63,11 @@ class AcademyDrawer extends StatelessWidget {
                           FontAwesomeIcons.home, "Início", pageController, 0),
                       DrawerTile(
                           FontAwesomeIcons.list, "Detalhes", pageController, 1),
-                      DrawerTile(
-                          Icons.email, "Contato", pageController, 2),
+                      DrawerTile(Icons.email, "Contato", pageController, 2),
                       DrawerTile(FontAwesomeIcons.cogs, "Estatísticas",
                           pageController, 3),
+                      DrawerTile(FontAwesomeIcons.userCircle, "Conta",
+                          pageController, 4),
                     ],
                   ),
                 ),

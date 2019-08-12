@@ -50,7 +50,6 @@ dependencies:
   onesignal_flutter: "2.0.1"
   cloud_functions: "0.0.5"
   flutter_facebook_login: '^1.1.0'
-  crypto: 2.1.1+1
 
 dev_dependencies:
   flutter_test:

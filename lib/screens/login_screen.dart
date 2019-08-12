@@ -17,7 +17,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
-import 'package:crypto/crypto.dart' as crypto;
 
 class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
@@ -346,9 +345,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       user = await _auth.signInWithCredential(credential);
     } catch (e) {
-      Email emails = new Email();
-      emails.sendEmail(e.toString(), 'murilo_haas@outlook.com',
-          'murilo_haas@outlook.com', 'erro login google');
+      
     }
 
     return user;
@@ -390,7 +387,4 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  String generateMd5(String input) {
-    return crypto.md5.convert(utf8.encode(input)).toString();
-  }
 }

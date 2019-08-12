@@ -350,14 +350,13 @@ class _GoogleMapsState extends State<GoogleMaps> {
   }
 
   void _handleSendSilentNotification(dataAcademy) async {
-    final msg = jsonEncode({
-      'sendTo': dataAcademy['idOneSignal']
-    });
+    final msg = jsonEncode({'sendTo': dataAcademy['idOneSignal']});
 
-    Map<String,String> headers = {'Content-Type':'application/json'};
+    Map<String, String> headers = {'Content-Type': 'application/json'};
 
-        await http.post("https://us-central1-startgym-220814.cloudfunctions.net/notification",
-            body: msg);
+    await http.post(
+        "https://us-central1-startgym-220814.cloudfunctions.net/notification",
+        body: msg);
   }
 
   Future<void> _updateDiarysUserAndAcademy(dataAcademy) async {

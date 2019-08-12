@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:startgym/tabs/academy_account_tab.dart';
 import 'package:startgym/tabs/academy_detail_tab.dart';
 import 'package:startgym/tabs/academy_home_tab.dart';
 import 'package:startgym/tabs/academy_statistic_tab.dart';
@@ -32,6 +33,10 @@ class AcademyHomeScreen extends StatelessWidget {
           ),
           Scaffold(
             body: AcademyStatisticTab(),
+            drawer: AcademyDrawer(_pageController),
+          ),
+          Scaffold(
+            body: AcademyAccountTab(),
             drawer: AcademyDrawer(_pageController),
           ),
         ],
