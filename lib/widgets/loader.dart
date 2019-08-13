@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 
 class Loader extends StatelessWidget {
-  double size = 0;
-
-  Loader({this.size});
-
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-        radius: size != 0 ? 18 : size,
         backgroundColor: Colors.transparent,
         child: CircularProgressIndicator(
           backgroundColor: Colors.transparent,

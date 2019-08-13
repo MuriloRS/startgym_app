@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:startgym/models/user_model.dart';
 import 'package:startgym/utils/alerts.dart';
+import 'package:startgym/utils/email.dart';
 import 'package:startgym/widgets/loader.dart';
 import 'package:startgym/widgets/sliver_appbar.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -15,132 +17,177 @@ class AcademyStatisticTab extends StatefulWidget {
 
 class _AcademySettingsTabState extends State<AcademyStatisticTab> {
   var isLoading = false;
+  var isSolicitationLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(slivers: <Widget>[
       CustomSliverAppbar(),
       SliverToBoxAdapter(
-          child: !isLoading
-              ? FutureBuilder(
-                  future: Future.wait([
-                    Firestore.instance
-                        .collection("userAcademy")
-                        .document(UserModel.of(context).firebaseUser.uid)
-                        .get(),
-                    _buildListCheckin(UserModel.of(context).firebaseUser.uid),
-                  ]),
-                  builder: (context, AsyncSnapshot<List<Object>> snapshot) {
-                    if (snapshot.connectionState.index ==
-                            ConnectionState.none.index ||
-                        snapshot.connectionState.index ==
-                            ConnectionState.waiting.index) {
-                      return Container(
-                          height: MediaQuery.of(context).size.height - 100,
-                          child: Center(child: Loader()));
-                    } else {
-                      DocumentSnapshot sackValue = snapshot.data.elementAt(0);
+          child: FutureBuilder(
+        future: Future.wait([
+          Firestore.instance
+              .collection("userAcademy")
+              .document(UserModel.of(context).firebaseUser.uid)
+              .get(),
+          _buildListCheckin(UserModel.of(context).firebaseUser.uid),
+        ]),
+        builder: (context, AsyncSnapshot<List<Object>> snapshot) {
+          if (snapshot.connectionState.index == ConnectionState.none.index ||
+              snapshot.connectionState.index == ConnectionState.waiting.index) {
+            return Container(
+                height: MediaQuery.of(context).size.height - 100,
+                child: Center(child: Loader()));
+          } else {
+            DocumentSnapshot sackValue = snapshot.data.elementAt(0);
 
-                      return Column(
-                        children: <Widget>[
-                          Container(
-                            height: MediaQuery.of(context).size.height - 50,
-                            child: DefaultTabController(
-                              length: 2,
-                              child: Scaffold(
-                                  appBar: AppBar(
-                                    centerTitle: true,
-                                    backgroundColor: Colors.grey[100],
-                                    titleSpacing: 0,
-                                    title: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Text(
-                                          "Valor para sacar: R\$ ${sackValue.data['academyValueSack'].toString().replaceAll('.', ',')}",
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              color: Colors.grey[800]),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.info,
-                                            color:
-                                                Theme.of(context).accentColor,
-                                          ),
-                                          iconSize: 20,
-                                          color: Theme.of(context).accentColor,
-                                          onPressed: () {
-                                            _showMessageInformation();
-                                          },
-                                          tooltip:
-                                              "Esse é o valor que você tem em 'caixa' para você retirar, o valor mínimo para saque é R\$ 300,00.",
-                                        )
-                                      ],
-                                    ),
-                                    bottom: TabBar(
-                                      tabs: [
-                                        Text("Por Checkin",
-                                            style: TextStyle(
-                                                color: Colors.grey[800],
-                                                fontSize: 17)),
-                                        Text("Por Usuário",
-                                            style: TextStyle(
-                                                color: Colors.grey[800],
-                                                fontSize: 17))
-                                      ],
-                                    ),
-                                  ),
-                                  body: TabBarView(
-                                    children: [
-                                      Container(
-                                          padding: EdgeInsets.all(10),
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height -
-                                              50,
-                                          child: SingleChildScrollView(
-                                            child: Table(
-                                              columnWidths: {
-                                                0: FlexColumnWidth(0.5),
-                                                1: FlexColumnWidth(0.25),
-                                                2: FlexColumnWidth(0.25)
-                                              },
-                                              children: (snapshot.data
-                                                  .elementAt(1) as Map)[0],
-                                            ),
-                                          )),
-                                      Container(
-                                          padding: EdgeInsets.all(10),
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height -
-                                              50,
-                                          child: SingleChildScrollView(
-                                            child: Table(
-                                              columnWidths: {
-                                                0: FlexColumnWidth(0.5),
-                                                1: FlexColumnWidth(0.25),
-                                                2: FlexColumnWidth(0.25)
-                                              },
-                                              children: (snapshot.data
-                                                  .elementAt(1) as Map)[1],
-                                            ),
-                                          )),
-                                    ],
-                                  )),
-                            ),
+            return Container(
+                color: Colors.grey[100],
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          "Valor para sacar: R\$ ${sackValue.data['academyValueSack'].toString().replaceAll('.', ',')}",
+                          style:
+                              TextStyle(fontSize: 20, color: Colors.grey[800]),
+                          textAlign: TextAlign.center,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.info,
+                            color: Theme.of(context).accentColor,
                           ),
-                        ],
-                      );
-                    }
-                  },
-                )
-              : Container(
-                  height: MediaQuery.of(context).size.height - 100,
-                  child: Center(child: Loader())))
+                          iconSize: 20,
+                          color: Theme.of(context).accentColor,
+                          onPressed: () {
+                            _showMessageInformation();
+                          },
+                          tooltip:
+                              "Esse é o valor que você tem em 'caixa' para você retirar, o valor mínimo para saque é R\$ 300,00.",
+                        )
+                      ],
+                    ),
+                    Container(
+                      height: MediaQuery.of(context).size.height - 50,
+                      child: DefaultTabController(
+                        length: 2,
+                        child: Scaffold(
+                            appBar: AppBar(
+                              centerTitle: true,
+                              backgroundColor: Colors.grey[100],
+                              title: !isSolicitationLoading
+                                  ? OutlineButton(
+                                      borderSide:
+                                          BorderSide(color: Colors.blue),
+                                      child: Text("Solicitar Saque"),
+                                      textColor:
+                                          Theme.of(context).colorScheme.primary,
+                                      onPressed: () {
+                                        _requestCash(
+                                            snapshot.data.elementAt(0));
+                                      },
+                                    )
+                                  : Loader(),
+                              bottom: TabBar(
+                                tabs: [
+                                  Text("Por Checkin",
+                                      style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 17)),
+                                  Text("Por Usuário",
+                                      style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 17))
+                                ],
+                              ),
+                            ),
+                            body: TabBarView(
+                              children: [
+                                Container(
+                                    padding: EdgeInsets.all(10),
+                                    height:
+                                        MediaQuery.of(context).size.height - 50,
+                                    child: SingleChildScrollView(
+                                      child: Table(
+                                        columnWidths: {
+                                          0: FlexColumnWidth(0.5),
+                                          1: FlexColumnWidth(0.25),
+                                          2: FlexColumnWidth(0.25)
+                                        },
+                                        children: (snapshot.data.elementAt(1)
+                                            as Map)[0],
+                                      ),
+                                    )),
+                                Container(
+                                    padding: EdgeInsets.all(10),
+                                    height:
+                                        MediaQuery.of(context).size.height - 50,
+                                    child: SingleChildScrollView(
+                                      child: Table(
+                                        columnWidths: {
+                                          0: FlexColumnWidth(0.5),
+                                          1: FlexColumnWidth(0.25),
+                                          2: FlexColumnWidth(0.25)
+                                        },
+                                        children: (snapshot.data.elementAt(1)
+                                            as Map)[1],
+                                      ),
+                                    )),
+                              ],
+                            )),
+                      ),
+                    ),
+                  ],
+                ));
+          }
+        },
+      ))
     ]);
+  }
+
+  void _requestCash(DocumentSnapshot snapshot) async {
+    Alerts al = new Alerts();
+
+    if (snapshot.data['academyValueSack'] > 100) {
+      setState(() {
+        isSolicitationLoading = true;
+      });
+
+      Email email = new Email();
+
+      await email.sendEmail(
+          '<h3>A Academia ${snapshot.data['name']} solicitou o saque da sua conta.</h3><br><h2> Código da academia = ${snapshot.documentID}</h2<h2>Valor de saque = ${snapshot.data['academyValueSack']}</h2></h3>',
+          snapshot.data['email'],
+          "startgym.atendimento@gmail.com",
+          'Solicitação de Saque');
+
+      al.buildCupertinoDialog(
+          Text(
+              "Enviado! Entraremos em contato com você em breve para acertar a transferência do valor."),
+          [
+            CupertinoDialogAction(
+              child: Text("Entendido", style: TextStyle(color: Colors.blue)),
+              isDefaultAction: true,
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+          context);
+
+      setState(() {
+        isSolicitationLoading = false;
+      });
+    } else {
+      al.showSnackBar(
+          type: 2,
+          context: context,
+          title: "Você não tem saldo suficiente.",
+          description: "O valor mínimo para sacar é de R\$ 300,00.");
+    }
   }
 
   Future<Map<int, List<TableRow>>> _buildListCheckin(String documentId) async {

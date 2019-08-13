@@ -1,11 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:startgym/models/user_model.dart';
-import 'package:startgym/utils/alerts.dart';
 import 'package:startgym/widgets/loader.dart';
 import 'package:startgym/widgets/sliver_appbar.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 
 class AcademyAccountTab extends StatefulWidget {
   @override
