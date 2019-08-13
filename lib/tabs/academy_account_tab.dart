@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:startgym/models/user_model.dart';
 import 'package:startgym/utils/alerts.dart';
 import 'package:startgym/widgets/loader.dart';
 import 'package:startgym/widgets/sliver_appbar.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class AcademyAccountTab extends StatefulWidget {
   @override
@@ -17,6 +19,7 @@ class _AcademyAccountTabState extends State<AcademyAccountTab> {
   var _controllerNumberAddress = TextEditingController();
 
   bool isLoading = false;
+  String autenticationFailed = "";
 
   Map<String, dynamic> academyData;
 
@@ -50,11 +53,15 @@ class _AcademyAccountTabState extends State<AcademyAccountTab> {
                   style: TextStyle(color: Colors.grey[600]),
                   controller: _controllerEmail,
                   keyboardType: TextInputType.text,
+                  enabled: false,
                   decoration: InputDecoration(
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(0)),
+                      fillColor: Colors.grey[200],
+                      filled: true,
+                      focusColor: Colors.grey[200],
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                       isDense: true),
                 ),
                 SizedBox(
@@ -122,7 +129,7 @@ class _AcademyAccountTabState extends State<AcademyAccountTab> {
                           padding: EdgeInsets.only(top: 5, bottom: 5),
                           color: Theme.of(context).accentColor,
                           child: Text("Salvar", style: TextStyle(fontSize: 24)),
-                          onPressed: () async{
+                          onPressed: () async {
                             await saveAcademyData(
                                 _controllerEmail.text,
                                 _controllerPhone.text,
@@ -145,7 +152,6 @@ class _AcademyAccountTabState extends State<AcademyAccountTab> {
       isLoading = true;
     });
 
-    this.academyData['email'] = email;
     this.academyData['telefone'] = phone;
     this.academyData['logradouro'] = address;
     this.academyData['numero'] = numberAddress;
@@ -154,27 +160,14 @@ class _AcademyAccountTabState extends State<AcademyAccountTab> {
 
     await UserModel.of(context).loadCurrentUser();
 
+    Scaffold.of(context).showSnackBar(SnackBar(
+      content: Text("Os dados foram salvos!"),
+      backgroundColor: Colors.green,
+      duration: Duration(seconds: 5),
+    ));
+
     setState(() {
       isLoading = false;
     });
-
-    Alerts al = new Alerts();
-
-    al.buildCupertinoDialog(
-        Text("Dados salvos."),
-        [
-          CupertinoDialogAction(
-            child: Text(
-              "Ok",
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            isDefaultAction: true,
-            isDestructiveAction: true,
-          )
-        ],
-        context);
   }
 }
