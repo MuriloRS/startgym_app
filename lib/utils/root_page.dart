@@ -36,10 +36,10 @@ class _RootPageState extends State<RootPage> {
       });
     });
 
-    OneSignal.shared.init("7e68d92a-4e88-44f8-a75c-c988f0ab7e75", iOSSettings: {
+    /*OneSignal.shared.init("7e68d92a-4e88-44f8-a75c-c988f0ab7e75", iOSSettings: {
       OSiOSSettings.autoPrompt: false,
       OSiOSSettings.inAppLaunchUrl: true
-    });
+    });*/
   }
 
   @override
