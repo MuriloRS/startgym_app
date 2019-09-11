@@ -1,6 +1,6 @@
 # startgym
 
-A new Flutter application.
+A flutter app that gives you the chance to pay one monthly and go to any singup gym.
 
 ## Getting Started
 
