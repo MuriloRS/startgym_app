@@ -1,16 +1,8 @@
 # startgym
 
-A flutter app that gives you the chance to pay one monthly and go to any singup gym.
+A app made with Flutter for gyms.
 
-## Getting Started
+This was my first app developed with Flutter, it was a project with the intention to make a startup, but because of divergencies with my partner with pivot the ideia.
 
-This project is a starting point for a Flutter application.
+The app was made with Flutter and Firebase, there is Google Maps integration, emails, APIs, authentication, payments with MercadoPago.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
