@@ -6,4 +6,10 @@ This was my first app developed with Flutter, it was a project with the intentio
 
 The app was made with Flutter and Firebase, there is Google Maps integration, emails, APIs, authentication, payments with MercadoPago.
 
-![alt text](https://github.com/MuriloRS/startgym_app/blob/master/images/back-card.png)
+![alt text](https://github.com/MuriloRS/startgym_app/blob/master/images/IMAGE1.png)
+
+![alt text](https://github.com/MuriloRS/startgym_app/blob/master/images/IMAGE2.png)
+
+![alt text](https://github.com/MuriloRS/startgym_app/blob/master/images/IMAGE3.png)
+
+![alt text](https://github.com/MuriloRS/startgym_app/blob/master/images/IMAGE4.png)
