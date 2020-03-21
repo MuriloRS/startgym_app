@@ -1,8 +1,14 @@
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mercado_pago/mercado_pago.dart';
 import 'package:startgym/models/user_model.dart';
+import 'package:startgym/screens/new_credit_card_screen.dart';
+import 'package:startgym/utils/alerts.dart';
+import 'package:startgym/widgets/dialog_cards.dart';
 import 'package:startgym/widgets/loader.dart';
 import 'package:startgym/screens/payment_daily_process.dart';
 import 'package:startgym/widgets/sliver_appbar.dart';
@@ -22,6 +28,7 @@ class _BuyDailyTabState extends State<BuyDailyTab>
   String packageChosen = "";
   bool isLoading = false;
   bool isProcessingPayment = false;
+  bool isCardSelected = false;
 
   TextEditingController numCartaoController = new TextEditingController();
   TextEditingController dataExpiracaoController = new TextEditingController();
@@ -56,46 +63,57 @@ class _BuyDailyTabState extends State<BuyDailyTab>
             slivers: <Widget>[
                 CustomSliverAppbar(),
                 SliverFillRemaining(
-                    child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    children: <Widget>[
-                      Text("Escolha um dos pacotes",
-                          style: Theme.of(context).textTheme.title),
-                      SizedBox(
-                        height: 25,
-                      ),
-                      InkWell(
-                          child: Container(
-                              decoration: borderPackages,
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 25),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Text("MENSAL", style: styleDailyPackages),
-                                  Text(
-                                    "PREÇO: R\$ 99,00",
-                                    style: stylePricePackages,
-                                  )
-                                ],
-                              )),
-                          onTap: () {
-                            showCreditCards(context, 30);
-                          }),
-                      SizedBox(height: 16),
-                    ],
-                  ),
+                    child: FutureBuilder(
+                  future: searchCardsUser(),
+                  builder: (context, AsyncSnapshot<MercadoObject> snapshot) {
+                    if (snapshot.connectionState.index ==
+                            ConnectionState.none.index ||
+                        snapshot.connectionState.index ==
+                            ConnectionState.waiting.index) {
+                      return Loader();
+                    } else {
+                      return Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          children: <Widget>[
+                            Text("Escolha um dos pacotes",
+                                style: Theme.of(context).textTheme.title),
+                            SizedBox(
+                              height: 25,
+                            ),
+                            InkWell(
+                                child: Container(
+                                    decoration: borderPackages,
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 15, vertical: 25),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Text("MENSAL",
+                                            style: styleDailyPackages),
+                                        Text(
+                                          "PREÇO: R\$ 99,00",
+                                          style: stylePricePackages,
+                                        )
+                                      ],
+                                    )),
+                                onTap: () {
+                                  showCreditCards(context, 30, snapshot.data);
+                                }),
+                            SizedBox(height: 16),
+                          ],
+                        ),
+                      );
+                    }
+                  },
                 )),
               ])
         : Loader();
   }
 
-  void showCreditCards(BuildContext context, planDays) {
-/*
-    searchCardsUser();
-*/
+  void showCreditCards(
+      BuildContext context, planDays, MercadoObject userCards) async {
     showModalBottomSheet(
         context: context,
         elevation: 5,
@@ -120,17 +138,14 @@ class _BuyDailyTabState extends State<BuyDailyTab>
                         onPressed: () {
                           Navigator.pop(context);
 
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      PaymentDailyProcess(30, 1)));
+                          _showUserRegisteredCards(userCards);
                         },
                         padding: EdgeInsets.all(20),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            Image.asset("images/master.png"),
+                            Icon(FontAwesomeIcons.creditCard,
+                                color: Colors.grey[800]),
                             SizedBox(
                               width: 20,
                             ),
@@ -176,11 +191,166 @@ class _BuyDailyTabState extends State<BuyDailyTab>
         });
   }
 
-  void searchCardsUser() async {
+  void _showUserRegisteredCards(MercadoObject userCards) {
+    Alerts al = new Alerts();
+
+    List<Widget> cards = _buildCreditCardUser(userCards);
+
+    showDialog(
+        context: context,
+        builder: (_) {
+          return Container(
+              width: 250,
+              height: 350,
+              child: StatefulBuilder(builder: (context, setState) {
+                return AlertDialog(
+                  content: Expanded(
+                      child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SizedBox(height: 10),
+                      Container(
+                          height: (cards.length * 60.0),
+                          child: ListView.builder(
+                            itemCount: cards.length,
+                            itemBuilder: (context, index) {
+                              return cards.elementAt(index);
+                            },
+                          )),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      GestureDetector(
+                        child: Container(
+                          child: Center(
+                              child: Icon(Icons.add,
+                                  size: 34, color: Colors.green[600])),
+                          decoration: new BoxDecoration(
+                              border: Border.all(
+                                  width: 1, color: Colors.green[600]),
+                              color: Colors.white,
+                              borderRadius: new BorderRadius.only(
+                                  bottomLeft: const Radius.circular(40.0),
+                                  bottomRight: const Radius.circular(40.0),
+                                  topLeft: const Radius.circular(40.0),
+                                  topRight: const Radius.circular(40.0))),
+                          width: 35,
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => NewCreditCardScreen()));
+                        },
+                      )
+                    ],
+                  )),
+                  title: Text(
+                    cards.length > 0
+                        ? "Escolha um cartão"
+                        : "Cadastre um cartão",
+                    textAlign: TextAlign.center,
+                  ),
+                  actions: <Widget>[
+                    CupertinoDialogAction(
+                      child: Text("Adicionar Cartão",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16)),
+                      onPressed: isCardSelected ? () {} : null,
+                      isDefaultAction: true,
+                      textStyle: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                );
+              }));
+        });
+  }
+
+  List<Widget> _buildCreditCardUser(MercadoObject userCards) {
+    LinkedHashMap<dynamic, dynamic> cards = userCards.data as LinkedHashMap;
+    List<Widget> cardsList = new List();
+
+    cards.forEach((k, v) {
+      (v as List).forEach((card) {
+        String lastDigits = card['last_four_digits'];
+        Icon cardIcon = _getCardIcon(card['issuer']['name']);
+
+        cardsList.add(GestureDetector(
+          onTap: () {
+            setState(() {
+              isCardSelected = true;
+            });
+          },
+          child: Card(
+            elevation: 5,
+            child: Container(
+                padding: EdgeInsets.all(15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    cardIcon,
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text("**** **** **** $lastDigits")
+                  ],
+                )),
+          ),
+        ));
+      });
+    });
+
+    return cardsList;
+  }
+
+  Icon _getCardIcon(cardType) {
+    switch (cardType) {
+      case "Mastercard":
+        return Icon(
+          FontAwesomeIcons.ccMastercard,
+          size: 20,
+        );
+        break;
+      case "Visa":
+        return Icon(
+          FontAwesomeIcons.ccVisa,
+          color: Colors.lightBlue[900],
+        );
+        break;
+      case "Hipercard":
+        return Icon(
+          FontAwesomeIcons.creditCard,
+          color: Colors.black,
+        );
+        break;
+      case "Elo":
+        return Icon(
+          FontAwesomeIcons.creditCard,
+          color: Colors.black,
+        );
+        break;
+      case 'American Express':
+        return Icon(
+          FontAwesomeIcons.ccAmex,
+          color: Colors.blue[700],
+        );
+        break;
+      default:
+        return Icon(
+          FontAwesomeIcons.creditCard,
+          color: Colors.black,
+        );
+    }
+  }
+
+  Future<MercadoObject> searchCardsUser() async {
     DocumentSnapshot user = await Firestore.instance
         .collection("users")
         .document(UserModel.of(context).firebaseUser.uid)
         .get();
+
+    if (user.data["idCard"] == null) {
+      return null;
+    }
 
     QuerySnapshot databaseCredentials =
         await Firestore.instance.collection("config").getDocuments();
@@ -197,6 +367,6 @@ class _BuyDailyTabState extends State<BuyDailyTab>
 
     MercadoObject result = await mp.cardsFromUser(user: user.data["idCard"]);
 
-    if (result != null) {}
+    return result;
   }
 }

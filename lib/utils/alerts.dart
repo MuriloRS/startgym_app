@@ -42,6 +42,7 @@ class Alerts {
         builder: (context) {
           return CupertinoAlertDialog(
             title: title,
+            
             content: content,
             actions: actions,
           );

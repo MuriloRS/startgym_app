@@ -44,7 +44,7 @@ class _PaymentDailyProcessState extends State<PaymentDailyProcess> {
         ),
         key: _scaffoldKey,
         body: widget.typePayment == 1
-            ? PaymentCreditcard()
+            ? PaymentCreditcard(null)
             : PaymentBoletoBancario());
   }
 

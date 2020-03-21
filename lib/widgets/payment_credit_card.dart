@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:startgym/models/user_model.dart';
 import 'package:startgym/utils/alerts.dart';
@@ -10,6 +9,11 @@ import 'package:startgym/widgets/loader.dart';
 import 'package:mercado_pago/mercado_pago.dart';
 
 class PaymentCreditcard extends StatefulWidget {
+
+  final String idCard;
+
+  PaymentCreditcard(this.idCard);
+
   @override
   _PaymentCreditcardState createState() => _PaymentCreditcardState();
 }
@@ -57,427 +61,140 @@ class _PaymentCreditcardState extends State<PaymentCreditcard> {
     focusNodeCpf = new FocusNode();
 
     return Container(
-        padding: EdgeInsets.only(top: 15),
         child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: <Widget>[
+        Container(
+          width: 180,
+          child: isFrontCard
+              ? Image.asset("images/front-card.png")
+              : Image.asset("images/back-card.png"),
+        ),
+        SizedBox(height: 10),
+        Divider(height: 1, color: Colors.grey[700]),
+        Stack(
           children: <Widget>[
-            Container(
-              width: 180,
-              height: MediaQuery.of(context).size.height - 800,
-              child: isFrontCard
-                  ? Image.asset("images/front-card.png")
-                  : Image.asset("images/back-card.png"),
-            ),
-            SizedBox(height: 10),
-            Divider(height: 1, color: Colors.grey[700]),
-            Stack(
-              children: <Widget>[
-                Form(
-                  key: _formKey,
-                  child: Container(
-                      height: MediaQuery.of(context).size.height - 250,
-                      padding: EdgeInsets.only(
-                          top: 10, left: 15, right: 15, bottom: 5),
-                      child: ScrollConfiguration(
-                          behavior: ScrollBehavior(),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              textDirection: TextDirection.ltr,
-                              children: <Widget>[
-                                SizedBox(height: 20),
-                                Text(
-                                  "NÚMERO DO CARTÃO*",
-                                  style: styleLabel,
-                                  textAlign: TextAlign.left,
-                                ),
-                                TextFormField(
-                                  controller: controllerCardNumber,
-                                  onEditingComplete: () {
-                                    FocusScope.of(context)
-                                        .requestFocus(focusNodeCpf);
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  validator: (numero) {
-                                    if (numero == "") {
-                                      return "O número do cartão é obrigatório";
-                                    }
-
-                                    if (numero.length < 16) {
-                                      return "Preencha o número do cartão corretamente, por favor";
-                                    }
-
-                                    return null;
-                                  },
-                                  decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 5),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(0)),
-                                      isDense: true),
-                                ),
-                                SizedBox(height: 20),
-                                Text("CPF*",
-                                    style: styleLabel,
-                                    textAlign: TextAlign.left),
-                                TextFormField(
-                                  controller: controllerCpfNumber,
-                                  focusNode: focusNodeCpf,
-                                  onEditingComplete: () {
-                                    FocusScope.of(context)
-                                        .requestFocus(focusNodeNameCard);
-                                  },
-                                  keyboardType: TextInputType.number,
-                                  validator: (numero) {
-                                    if (numero == "") {
-                                      return "O seu cpf é obrigatório para completar a transação.";
-                                    }
-
-                                    if (numero.length < 11) {
-                                      return "Preencha o cpf corretamente, por favor";
-                                    }
-
-                                    return null;
-                                  },
-                                  decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 5),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(0)),
-                                      isDense: true),
-                                ),
-                                SizedBox(
-                                  height: 16,
-                                ),
-                                Text("NOME DO CARTÃO*",
-                                    style: styleLabel,
-                                    textAlign: TextAlign.left),
-                                TextFormField(
-                                  controller: controllerNameCard,
-                                  focusNode: focusNodeNameCard,
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  validator: (nome) {
-                                    if (nome == "") {
-                                      return "O campo nome é obrigatório";
-                                    }
-
-                                    if (nome.length < 6) {
-                                      return "Preencha o nome do cartão corretamente, por favor";
-                                    }
-
-                                    return null;
-                                  },
-                                  onEditingComplete: () {
-                                    FocusScope.of(context)
-                                        .requestFocus(focusNodeExpirationDate);
-                                  },
-                                  decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 5),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(0)),
-                                      isDense: true),
-                                ),
-                                SizedBox(height: 16),
-                                Container(
-                                    width: double.maxFinite,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: <Widget>[
-                                        Expanded(
-                                            child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text(
-                                              "DATA DE EXPIRAÇÃO*",
-                                              style: styleLabel,
-                                              textAlign: TextAlign.left,
-                                            ),
-                                            TextFormField(
-                                              focusNode:
-                                                  focusNodeExpirationDate,
-                                              controller:
-                                                  controllerExpirationDate,
-                                              keyboardType:
-                                                  TextInputType.number,
-                                              validator: (data) {
-                                                if (data == "") {
-                                                  return "A data de expiração é obrigatório.";
-                                                }
-
-                                                if (data.length < 4) {
-                                                  return "Preencha a data de expiração corretamente, por favor";
-                                                }
-
-                                                return null;
-                                              },
-                                              onEditingComplete: () {
-                                                setState(() {
-                                                  isFrontCard = false;
-                                                });
-
-                                                FocusScope.of(context)
-                                                    .requestFocus(focusNodeCvc);
-                                              },
-                                              decoration: InputDecoration(
-                                                  contentPadding:
-                                                      EdgeInsets.symmetric(
-                                                          horizontal: 5,
-                                                          vertical: 5),
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              0)),
-                                                  isDense: true),
-                                            )
-                                          ],
-                                        )),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Expanded(
-                                            child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text(
-                                              "CVC*",
-                                              style: styleLabel,
-                                              textAlign: TextAlign.left,
-                                            ),
-                                            TextFormField(
-                                              controller: controllerCvc,
-                                              focusNode: focusNodeCvc,
-                                              keyboardType:
-                                                  TextInputType.number,
-                                              validator: (cvc) {
-                                                if (cvc == "") {
-                                                  return "O campo CVC é obrigatório";
-                                                }
-
-                                                if (cvc.length < 2) {
-                                                  return "Preencha o CVC corretamente, por favor";
-                                                }
-
-                                                return null;
-                                              },
-                                              onEditingComplete: () {
-                                                setState(() {
-                                                  isFrontCard = true;
-                                                });
-                                              },
-                                              decoration: InputDecoration(
-                                                  contentPadding:
-                                                      EdgeInsets.symmetric(
-                                                          horizontal: 5,
-                                                          vertical: 5),
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              0)),
-                                                  isDense: true),
-                                            )
-                                          ],
-                                        ))
-                                      ],
-                                    )),
-                                SizedBox(
-                                  height: 20,
-                                ),
-                                Container(
-                                    width: double.maxFinite,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: <Widget>[
-                                        Expanded(
-                                            child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text(
-                                              "TIPO DE PAGAMENTO*",
-                                              style: styleLabel,
-                                              textAlign: TextAlign.left,
-                                            ),
-                                            new DropdownButton<String>(
-                                              hint: Text("Tipo de pagamento"),
-                                              isExpanded: true,
-                                              style: TextStyle(
-                                                  color: Colors.black),
-                                              value: selectedTypePurchase,
-                                              items: <String>['Crédito']
-                                                  .map((String value) {
-                                                return new DropdownMenuItem<
-                                                    String>(
-                                                  value: value,
-                                                  child: new Text(value),
-                                                );
-                                              }).toList(),
-                                              onChanged: (s) {
-                                                setState(() {
-                                                  selectedTypePurchase = s;
-                                                });
-                                              },
-                                            ),
-                                          ],
-                                        )),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Expanded(
-                                            child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: <Widget>[
-                                            Text(
-                                              "BANDEIRA*",
-                                              style: styleLabel,
-                                              textAlign: TextAlign.left,
-                                            ),
-                                            new DropdownButton<String>(
-                                              hint: Text("Bandeira"),
-                                              isExpanded: true,
-                                              style: TextStyle(
-                                                  color: Colors.black),
-                                              value: selectedFlag,
-                                              items: <String>[
-                                                'Mastercard',
-                                                'Visa',
-                                                'Hipercard',
-                                                'Elo',
-                                                'American Express'
-                                              ].map((String value) {
-                                                return new DropdownMenuItem<
-                                                    String>(
-                                                  value: value,
-                                                  child: new Text(value),
-                                                );
-                                              }).toList(),
-                                              onChanged: (s) {
-                                                setState(() {
-                                                  selectedFlag = s;
-                                                });
-                                              },
-                                            ),
-                                          ],
-                                        ))
-                                      ],
-                                    )),
-                                SizedBox(
-                                  height: 16,
-                                ),
-                                Text(
-                                  "PARCELAS",
-                                  style: styleLabel,
-                                  textAlign: TextAlign.left,
-                                ),
-                                new DropdownButton<String>(
-                                  hint: Text("Parcelas"),
-                                  isExpanded: true,
-                                  style: TextStyle(color: Colors.black),
-                                  value: selectedInstallments,
-                                  items: <String>[
-                                    '1x sem juros',
-                                    '2x sem juros',
-                                    '3x sem juros',
-                                  ].map((String value) {
-                                    return new DropdownMenuItem<String>(
-                                      value: value,
-                                      child: new Text(value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (s) {
-                                    setState(() {
-                                      selectedInstallments = s;
-                                    });
-                                  },
-                                ),
-                                Container(
-                                    padding: EdgeInsets.all(10),
-                                    width: double.infinity,
-                                    child: RaisedButton(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 5),
-                                      onPressed: () async {
-                                        if (_formKey.currentState.validate()) {
-                                          FocusScope.of(context)
-                                              .requestFocus(new FocusNode());
-
-                                          setState(() {
-                                            isProcessingPayment = true;
-                                          });
-
-                                          Map<String, dynamic> result;
-
-                                          try {
-                                            result = await processPayment();
-                                          } catch (e) {
-                                            new Alerts().buildCupertinoDialog(
-                                                Text(e.toString()),
-                                                [
-                                                  CupertinoDialogAction(
-                                                    child: Text("OK"),
-                                                    isDefaultAction: true,
-                                                  )
-                                                ],
-                                                context);
-                                          }
-
-                                          if (result["status"] == "approved") {
-                                            _doAcceptPaymentMonthly();
-
-                                            Navigator.pop(context);
-                                          }
-
-                                          if (result["status"] == "approved" ||
-                                              result["status"] ==
-                                                  "in_process") {
-                                            _formKey.currentState.reset();
-                                          }
-
-                                          showResultProcessPayment(result);
-
-                                          setState(() {
-                                            isProcessingPayment = false;
-                                          });
-                                        }
-                                      },
-                                      child: Text(
-                                        'Finalizar Compra',
-                                        style: TextStyle(fontSize: 24),
-                                      ),
-                                    )),
-                                Padding(
-                                    padding: EdgeInsets.only(
-                                        bottom: MediaQuery.of(context)
-                                            .viewInsets
-                                            .bottom)),
-                              ],
+            Form(
+              key: _formKey,
+              child: Container(
+                  height: MediaQuery.of(context).size.height - 250,
+                  padding:
+                      EdgeInsets.only(top: 0, left: 15, right: 15, bottom: 5),
+                  child: ScrollConfiguration(
+                      behavior: ScrollBehavior(),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          textDirection: TextDirection.ltr,
+                          children: <Widget>[
+                            SizedBox(
+                              height: 16,
                             ),
-                          ))),
-                ),
-                isProcessingPayment
-                    ? Container(
-                        height: MediaQuery.of(context).size.height - 250,
-                        decoration: new BoxDecoration(
-                          color: const Color.fromRGBO(250, 250, 250, 1)
-                              .withOpacity(0.7),
+                            Text(
+                              "PARCELAS",
+                              style: styleLabel,
+                              textAlign: TextAlign.left,
+                            ),
+                            new DropdownButton<String>(
+                              hint: Text("Parcelas"),
+                              isExpanded: true,
+                              style: TextStyle(color: Colors.black),
+                              value: selectedInstallments,
+                              items: <String>[
+                                '1x sem juros',
+                                '2x sem juros',
+                                '3x sem juros',
+                              ].map((String value) {
+                                return new DropdownMenuItem<String>(
+                                  value: value,
+                                  child: new Text(value),
+                                );
+                              }).toList(),
+                              onChanged: (s) {
+                                setState(() {
+                                  selectedInstallments = s;
+                                });
+                              },
+                            ),
+                            Container(
+                                padding: EdgeInsets.all(10),
+                                width: double.infinity,
+                                child: RaisedButton(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  padding: EdgeInsets.symmetric(vertical: 5),
+                                  onPressed: () async {
+                                    if (_formKey.currentState.validate()) {
+                                      FocusScope.of(context)
+                                          .requestFocus(new FocusNode());
+
+                                      setState(() {
+                                        isProcessingPayment = true;
+                                      });
+
+                                      Map<String, dynamic> result;
+
+                                      try {
+                                        result = await processPayment();
+                                      } catch (e) {
+                                        new Alerts().buildCupertinoDialog(
+                                            Text(e.toString()),
+                                            [
+                                              CupertinoDialogAction(
+                                                child: Text("OK"),
+                                                isDefaultAction: true,
+                                              )
+                                            ],
+                                            context);
+                                      }
+
+                                      if (result["status"] == "approved") {
+                                        _doAcceptPaymentMonthly();
+
+                                        Navigator.pop(context);
+                                      }
+
+                                      if (result["status"] == "approved" ||
+                                          result["status"] == "in_process") {
+                                        _formKey.currentState.reset();
+                                      }
+
+                                      showResultProcessPayment(result);
+
+                                      setState(() {
+                                        isProcessingPayment = false;
+                                      });
+                                    }
+                                  },
+                                  child: Text(
+                                    'Finalizar Compra',
+                                    style: TextStyle(fontSize: 24),
+                                  ),
+                                )),
+                            Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context)
+                                        .viewInsets
+                                        .bottom)),
+                          ],
                         ),
-                        child: Center(
-                          child: Loader(),
-                        ),
-                      )
-                    : Container()
-              ],
+                      ))),
             ),
+            isProcessingPayment
+                ? Container(
+                    height: MediaQuery.of(context).size.height - 250,
+                    decoration: new BoxDecoration(
+                      color: const Color.fromRGBO(250, 250, 250, 1)
+                          .withOpacity(0.7),
+                    ),
+                    child: Center(
+                      child: Loader(),
+                    ),
+                  )
+                : Container()
           ],
-        ));
+        ),
+      ],
+    ));
   }
 
   Future<String> loadAsset(BuildContext context) async {
@@ -487,6 +204,7 @@ class _PaymentCreditcardState extends State<PaymentCreditcard> {
   Future<Map<String, dynamic>> processPayment() async {
     String userCard = "";
 
+    
     QuerySnapshot databaseCredentials =
         await Firestore.instance.collection("config").getDocuments();
 

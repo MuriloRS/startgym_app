@@ -158,7 +158,7 @@ class _AcademySettingsTabState extends State<AcademyStatisticTab> {
       Email email = new Email();
 
       await email.sendEmail(
-          '<h3>A Academia ${snapshot.data['name']} solicitou o saque da sua conta.</h3><br><h2> Código da academia = ${snapshot.documentID}</h2<h2>Valor de saque = ${snapshot.data['academyValueSack']}</h2></h3>',
+          '<h3>A Academia ${snapshot.data['name']} solicitou o saque da sua conta.</h3><br><h2> Código da academia = ${snapshot.documentID}</h2><br><h2>Valor de saque = ${snapshot.data['academyValueSack']}</h2>',
           snapshot.data['email'],
           "startgym.atendimento@gmail.com",
           'Solicitação de Saque');
